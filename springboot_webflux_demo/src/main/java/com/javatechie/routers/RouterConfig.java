@@ -26,6 +26,8 @@ public class RouterConfig {
                         customerHandler::getCustomers)
                 .GET("/router/customersEventStream",
                         customerHandler::getCustomersEventStream)
+                .GET("/router/customerById/{customerId}", customerHandler::getCustomerById)
+                .POST("/router/save", customerHandler::saveCustomer)
                 .build();
 
     }

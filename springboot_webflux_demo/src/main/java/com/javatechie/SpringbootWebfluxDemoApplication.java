@@ -10,7 +10,7 @@ import org.springframework.util.StopWatch;
 public class SpringbootWebfluxDemoApplication {
 
     @Bean()
-    @Scope("prototype")
+    @Scope(value = "prototype")
     public StopWatch stopWatch() {
         return new StopWatch();
     }

@@ -36,4 +36,29 @@ public class CustomerHandler {
                 .body(customerFlux, Customer.class);
     }
 
+
+    public Mono<ServerResponse> getCustomerById(ServerRequest serverRequest) {
+
+        int customerId = Integer.parseInt(serverRequest.pathVariable("customerId"));
+        Mono<Customer> customerMono = customerDao.getAllCustomersList()
+                .filter(customer -> customer.getId() == customerId)
+                //.take(1).single();
+                    //OR
+                .next();
+
+        return ServerResponse.ok()
+                .body(customerMono, Customer.class);
+    }
+
+    public Mono<ServerResponse> saveCustomer(ServerRequest serverRequest) {
+
+        Mono<Customer> customerMono = serverRequest.bodyToMono(Customer.class);
+
+        Mono<String> savedResponseStr = customerMono
+                .map(customer -> customer.getId() + " - " + customer.getName());
+
+        System.out.println("Customer is saved successfully...");
+        return ServerResponse.ok().body(savedResponseStr, String.class);
+    }
+
 }
