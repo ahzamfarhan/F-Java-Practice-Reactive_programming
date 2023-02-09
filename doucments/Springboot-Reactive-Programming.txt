@@ -1,0 +1,358 @@
+Reference:
+	https://www.youtube.com/watch?v=bXcFCgQsvAE
+
+
+
+Core Feature of Reactive Programming
+
+	1. Asynchronous and non blocking
+	2. Functiona Style code
+	3. Data Flow as event driven stream
+	4. New Progamming paradigm
+	5. Backpressure on data stream
+
+
+
+	1. Asynchronous and non blocking
+
+		1. Take a customer's order
+		2. Tell the cook to prepare food
+		3. Instead of waiting for it to be cooked,
+		   take the next person's order and and tell 
+		   the cook when you finish on cooking le me know 
+		4. Once the food is done, you give the food to the customer.
+
+
+		Here you are not blocked with cook. You informed the cook
+		please let me know when you complete your current cooking
+		this is how you are subscribed to cook. While cook is preparing
+		order you are continue on interact with other customers to take their 
+		order and keep the list with you. This is how you are not 
+		blocked with cook but subscribed to cook. You subscriber and cook
+		is publisher.
+ 
+		NOTE:- This model of programming is called publisher and subscriber
+		programming model. In our example cook is Publisher and we are subscriber
+		.Truely speaking, Subscriber and Publisher model is thing where you
+		subscribe for perticular event or things to happen when this thing or
+		event occurs then you get notified of it. You heard about Asychonrouns
+		Message Driven programming and tools such as ActiveMQ, RabbitMQ and etc.
+
+
+			Lets assume the scenerio where we have our rest application. Customer send their
+		order to this web app. When new request comes to our web app our app gives separate
+		thread for it. that thread is blocked for this request. suppose all our incoming requests
+		are time consuming and blocking. We get 10 request per second and we successfully assign
+		separate thread for each of new in coming blocking request. That means we assign 10 new
+		threads per second and they are blocked for long time until request is not completed. 
+		That means within 1 minute we have assinged 600 thread. 
+		What if demand is high and we keep on receiving order for 2 hours we have around 72000 
+		separate threads for these huge time consuming requests and majority of these threads are blocked 
+		even if they are 72000. Our application has limition of generating new threads. 
+		It is not like that we can generate as many as thread as we require. No it is not possible. 
+		Our web app thread pool has limitation.
+		 	To overcome this problem we have Reactive Programming Padigram that comprises of publisher
+		and subscriber apprrach. In this way we do not need huge number of threads to proccess customers
+		requests asynchronously. If one thread is selected for any request to receive request
+		and then interact with DB to retrieve data but at the same time this thread immediately released itself 
+            however internal processing continue for data retrieval from DB and takes time. Good thing is our thread
+            is free to do other task. It is not blocked for long running data retrival process of DB.  When DB 
+		is ready to give data as a publisher then it just notify it and any of free thread recive the data 
+		and send response back to customer. This is how our web application work more efficiently
+		and appears non blocking and faster.Here point is that data is sent as event stream. Hence
+		subscriber or reciver thread is not blocked till stream is consumed. Rather thread tells how
+		elements it ready to accept now. If thread tells that I can accept n number of elements 
+		then Publisher(DB) send n numnber of elements one by one and for each element consumer thread
+		receive event and response this event and receive the data element. Here point to be noted
+		that even of publisher 10000 elements to send but subsriber says it want only 100 element then. Publisher
+		send 100 element 1 by 1 as event and it finish sending 100 element then it stop. If thread want more
+		element then it can request for it. If it do not want then it cancel request.
+
+
+
+	
+	 
+	2. Functiona Style code
+
+		
+		Coding style of Reactive programming is functional and declarative. There are heavy use of lambda expression, streams
+		Method references and etc. Reactive programming uses Mono nad Flux wrapper to handle data for example sending data
+		as output.
+			Mono:- Handle Single instance or Single Data Unit
+			Flux:- Handle multiple instance such as data structure List, Array and Map or Handle multiple Units of Data
+
+		
+
+
+	3. Data Flow as event driven stream
+
+		Suppose that client make request to our web app then connection is kept opened or in open state. 
+ 
+   
+
+
+	5. Backpressure on data stream
+
+		Suppose Your Rest API retrieve data from db and db provide very huge amount of data to your rest web app and your rest web app
+		is not capable to handle such huge amount of data then what happen. Your rest web app my crash and throw OutOfMemoryError...
+		To avoid this, Reactive pragramming has feature. It communicate to DB not to send huge amount of data.
+		Let finish this event stream data first and when I (Rest App) completes then I(Publisher) request again to send data to event 
+            stream. This is the way, it handles the data flow from db. This feature is called Backpressure on data stream. 
+            For example you call getAllItems() that interact with DB and it will supply data element one by one in event triggered form. This 
+		is how data flow from event stream but event provide continues large amount of data flow for long time. 
+		In this case,  you(Subscriber) inform DB Driver(Publisher) to supply only N number of events of data one by one but 
+            do not provide more data events. If I (Subscriber) need then more data elements then I (Subscriber) again request DB (Provider) . 
+		If I (Subscriber) do not need more data then I (Subscriber) cancel data transfer. 
+
+	With all these new feature. Application would not slow down. It is non blocking and asychronous and others... It subscribed
+	to event streams and etc. This feature is called Backpresure
+
+
+ 
+
+
+Reactive Programming
+
+	Following 4 interfaces are 4 pillors of Reactive Programming
+
+	1. Publisher ----> Publish Event (Database Driver)
+	2. Subscriber ------->  Subscribe to event (Backend app/Browser)
+	3. Subscription------------>
+	4. Processor	
+
+
+
+	Each of above interface has methods to implements. Let's see them now.
+
+
+		1. Publisher
+
+			Method Signature
+				
+				public interface Publisher<T> {
+					
+					public void subscribe(Subscribe<? super T> s);
+				}
+
+
+			Publisher is a Data Source who will always publish an event
+			to Subscriber. Subscriber calls subscribe(..) method of publisher to 
+			subscribe itself to this publisher. Subscriber call this subscribe method 
+			to subscribe to publisher and Subscriber receive Subscription instance
+			it is type of Subscription. Subscriber request to publisher using
+			this intance access data elements in form of event driven stream.
+
+
+
+		2. Subscriber or Consumer
+
+			This is subscriber or consumer. Which subscribe to event of Publisher
+
+
+				public Subscribe<T> {
+
+
+					public void onSubscribe(Subscription s);
+					public void onNext(T t);
+					public void onError(Throwable throwable);
+					public void onComplete();
+
+				} 	
+			
+
+
+				All of following methods are event related. Publisher call these methods of subscriber 
+				to communicate with subscriber.
+ 
+					public void onSubscribe(Subscription s);
+					public void onNext(T t);
+					public void onError(Throwable t);
+					public void onComplete();
+						
+
+					public void onSubscribe(Subscription s);
+						Publisher calls this method on subscriber as response to subscriber when subscriber calls 
+						subscribe method on Publisher for subscription.
+
+
+					public void onNext(T t):- 
+						Publisher calls onNext(T) on Subscriber which is event fire. Subscriber recieve it as event and access
+					      data element. There can be n number events then this method onNext() will
+						call be called on subscriber n number of times. So for each individual data element transfer 
+						the onNext() method will be called. 			
+					
+					
+					public void onError(Throwable t):-
+						Publisher calls this method when error occurs during processing of event.
+						The transfer completely stopped after calling this method on subscriber.
+						There is no way to resume the data transfer from event stream. You 
+						have to starts from start and create new event stream.
+		
+	
+					public void onComplete():-
+						Publisher calls onComplete() method on Subscriber to indicate 
+						that event stream data transfer is completed successfully
+
+
+
+		3. Subscription
+				
+				This represents the unique relationship between Subscriber and Publisher
+
+
+				public interface Subcription {
+
+					public void request(long n);
+					public void cancel();
+				}
+
+
+
+				public void request(long n):- Subscriber calls this method on Subscription instance to
+				send request to publisher that I am ready to take data element one by one as event by event. 
+				Please send me number of elements in form event stream. The n number of elements are passed
+				method argument to request(n). If there are more data element and subscriber decide to 
+				take anther m or n number of data element then it can repeat same step by call request(m|n)
+				on subscription instance to communicate publisher that it want another m|n number of data 
+				elements in form of event stream.
+
+				public void cancel():- Subscriber calls this method on subscription instance to send request
+				to publisher that. It does not want to take data any more so do not send me data. So publisher
+				calls onComplete() method ob subsriber to end the data transfer.   
+
+
+
+		4:- A processor represents a processing stage -- which is both subscriber and publisher and must obey the contract
+		    of both
+
+			public void Prcessor<T, R> extends Subscriber<T>, Publisher<R>{
+			}	
+			
+
+	
+			
+			
+
+			
+Reactive Stream Workflow
+
+
+
+
+	|-----------------------------------------------------|
+	|					       			|
+	|  			  	Publisher     			|-------------
+	|	      			       			|            |
+	|-----------------------------------------------------|            |
+	  /\   	 |           /\       /\              /\               |
+	  ||       2 |           ||       ||              ||               |
+	  ||	       |           ||       ||              ||               |
+	  ||	  onSubscribe()	 ||     4 ||          4.n ||             5 |
+	1 ||         |           ||       ||              ||               |
+	  ||         |           ||  onNext(data)         ||           onComplete()    
+     subscribe()   |	     3 ||       ||              ||               
+	  ||         |        request(n)  ||<-----------> ||               OR
+	  ||         |           ||       ||              ||               
+	  ||         |           ||       ||              ||             onError()   
+	  ||         |           ||       ||              ||               |
+	  ||         |           ||       ||              ||               |  
+	  ||		 |		 ||   |-----------------------------|      |
+	  ||		 |		 ||---||------------|			|      |
+	  ||		 |			||Subscription|			|<------
+	  ||	       ---------------->||------------|      		|
+	  ||--------------------------|  			            |
+						|		Subscriber        |
+						|-----------------------------|
+           
+
+	  1. Subscriber():- Subscriber calls subscribe() method on Publisher to 
+	  subscribe itself for this publisher. It pass itself as
+        a input 
+	
+	  2. onSubscribe():- Publisher calls onSubscribe() method on 
+           Subscriber on successfull subscriptions of subscriber. It
+	     also return Subscription instance to subscriber. Subscriber
+	     hold this instance and use it in 3rd step to send request to 
+	     publisher that "I am ready to recieve n number of element data
+	     in form of event stream"			
+
+	  3. request(n): Subscriber uses subscription method and calls its request(n) method 
+	     to send request to publisher that subscriber is ready to recieve data element
+           in form of event stream. Subscriber pass numberic value to request(n) method
+	     to limit the number of data elements it want to recieve because publisher 
+	     may have more or perhaps huge amount of data element to send.
+
+		Note:- If Publisher sends n number of elements as per the request send 
+		via request(n) method call on Subscription instance but Subcriber want
+		more m number of data then it can call request method again and again
+		publisher sends n number of data elements in for event driven stream. 
+
+		Note:- Subscription also has cancel() method. that subscriber can call
+		if it want to end the data flow. In this case Publisher calls onComplete()
+		to end the data elements transfer. After call to cancel() data transfer
+		cannot be resume unless you start from step first to get new and fresh
+		event data stream. 
+		
+
+
+	  4. onNext(dataElement):- Publisher send event data stream to subscriber 
+	     by invoking onNext(data) method on subscriber. Suppose if Publisher
+	     required to send 10 elements then it will call onNext() 10 times on
+	     subscriber to send 10 elements one by one to subscriber. Here the role of 
+	     Previous step 3rd comes in to picture. Letus understand it again.
+           Suppose subscriber calls publisher.request(7) then although there 
+           100 data elements and publisher can call onNext(data) 100 times on subscriber but 
+           it will call onNext(data) 7 times only on subscriber and 7 data elements 
+	     would be sent to subscriber because in 3rd step subscriber call request(7) 
+	     method with argument of 7 to tell publisher that I want 7 data elements 
+	     from you publisher. THIS IS HOW BACKPRESSURE IS SUPPORTED BY REACTIVE PROGRAMMING. 
+	     The other point is that request method is not available in Subscriber rather it is
+	     exists in subscription interface. 
+
+
+
+	  5:- publisher calls onComplete() method after completion of one or more calls to 
+		onNext() on subscriber. onComplete() on subscriber by Publisher mention that I(Publisher) 
+		have completed successfully and transferred all expected data elements. But If 
+		some error occurs during data elements transfer then publisher ends
+		it by calling onError() method subscriber instead of onComplete()
+		it is indication to Subscriber that data would not be transfered succesfully. Some
+		Error occured. And Subscriber also access error. HERE MAIN POINT IS THAT EXCEPTION
+		IS NOT THROWN OR RAISED BUT SEND AS DATA ELEMENT. IT IS NEW THING. IN CONVENTIONAL
+		PROGRAMMING WE THROWS THE ERROR.
+
+
+
+	Reactive Programming Library
+
+
+		. Reactor
+		. RxJava
+		. Jdk9 FLow Reactive Stream
+
+
+		
+	In This VLog Tutorial we will use Project Reactor for Reative Programming
+	because it is recommanded by Spring framework. Google the Project Reactor
+	and visit site. You will find there are lot of reactor models but we will
+	following models
+
+		. Reactor Core
+		. Reactore Test
+		. Reactor Netty
+	
+	 In reactor programming we have to use Mono and Flux Data types.
+	 With these two data types, we will design our reactive programming
+	 as well as we will play with Java 8 onwards streams and lamda
+	 by using these two data types that are Mono and Flux.
+
+  	
+
+	I HAVE COVERED THREORY PART IN VLOG UPTO 20:50 Mins VLOG URL
+
+	https://www.youtube.com/watch?v=bXcFCgQsvAE	
+
+	
+
+							
+			
